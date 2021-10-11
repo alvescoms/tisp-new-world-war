@@ -1,0 +1,32 @@
+{
+  "name": "new-world-wars",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@prisma/client": "^2.30.3",
+    "atob": "^2.1.2",
+    "axios": "^0.21.1",
+    "bcrypt": "^5.0.1",
+    "express-jwt": "^6.1.0",
+    "hash": "^0.2.1",
+    "jsonwebtoken": "^8.5.1",
+    "next": "11.1.2",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "react-icons": "^4.2.0",
+    "styled-components": "^5.3.1",
+    "sweetalert2": "^11.1.4",
+    "sweetalert2-react-content": "^4.1.1"
+  },
+  "devDependencies": {
+    "eslint": "7.32.0",
+    "eslint-config-next": "11.1.2",
+    "prisma": "2.30.3"
+  }
+}

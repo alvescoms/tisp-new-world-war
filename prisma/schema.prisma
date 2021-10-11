@@ -1,0 +1,183 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // url = "postgres://vvmclfpyrpvhyy:b09aea3d764ec3628a7910bd8ca6683457e011615be978d32cb294dd13d35568@ec2-44-195-247-84.compute-1.amazonaws.com:5432/ddqrig7j37bein"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Users {
+  id            Int                  @id @default(autoincrement())
+  name          String
+  password      String
+  email         String               @unique
+  createdAt     DateTime             @default(now()) @map(name: "created_at")
+  updatedAt     DateTime?            @updatedAt @map(name: "updated_at")
+  statusId      Int
+  lastLogin     DateTime?
+  active        Boolean
+  hashActive    String?
+  // References
+  userStatus    UserStatus          @relation(fields: [statusId], references: [id])
+  charlist      CharList[]
+  gameEvent     GameEvents[]
+  guildList     GuildList[]
+}
+
+model UserStatus{
+  id            Int                  @id @default(autoincrement())
+  name          String
+  // References
+  users         Users[]
+}
+
+model CharList {
+  id            Int                  @id @default(autoincrement())
+  userId        Int
+  name          String
+  level         Int?
+  weaponP       Int?
+  weaponS       Int?
+  factionId     Int?
+  serverId      Int
+  guildId       Int?
+  isPrincipal   Boolean?
+  // References
+  user          Users                @relation(fields: [userId], references: [id])
+  guild         GuildList?           @relation(fields: [guildId], references: [id])
+  weaponsP      WeaponList?          @relation(name: "weaponP", fields: [weaponP], references: [id])
+  weaponsS      WeaponList?          @relation(name: "weaponS", fields: [weaponS], references: [id])
+  faction       Factions?            @relation(fields: [factionId], references: [id])
+  gameserver    GameServers          @relation(fields: [serverId], references: [id])
+  eventPlayers  eventPlayers[]
+  // Unique constraint
+  @@unique([name, serverId], name: "AnotherChar_same_server_key")
+  @@unique([serverId, userId], name: "AnotherChar_same_server_same_user_key")
+}
+
+model WeaponList {
+  id            Int                  @id @default(autoincrement())
+  name          String
+  // References
+  charListP     CharList[]          @relation("weaponP")
+  charListS     CharList[]          @relation("weaponS")
+}
+
+model GuildList {
+  id            Int                  @default(autoincrement()) @id
+  name          String
+  serverId      Int
+  factionId     Int
+  ownerId       Int
+  // References
+  gameserver    GameServers          @relation(fields: [serverId], references: [id])
+  users         Users                @relation(fields: [ownerId], references: [id])
+  factions      Factions             @relation(fields: [factionId], references: [id])
+  char          CharList[]
+  // Unique constraint
+  @@unique([name, serverId], name: "Same_Server_Guild_name")
+  @@unique([ownerId, serverId], name: "Same_Guild_Owner_Same_Server")
+}
+
+model GameServers {
+  id            Int                  @default(autoincrement()) @id
+  name          String
+  kingdomId     Int
+  regionId      Int
+  // References
+  kingdom       Kingdons             @relation(fields: [kingdomId], references: [id])
+  region        Regions              @relation(fields: [regionId], references: [id])
+  char          CharList[]
+  guild         GuildList[]
+}
+
+model GameEvents {
+  id            Int                  @default(autoincrement()) @id
+  typeId        Int
+  createdAt     DateTime             @default(now()) @map(name: "created_at")
+  eventDate     DateTime
+  ownerId       Int
+  territoryId   Int
+  factionAtkId  Int
+  factionDefId  Int
+  statusId      Int
+  // References
+  type          EventType            @relation(fields: [typeId], references: [id])
+  owner         Users                @relation(fields: [ownerId], references: [id])
+  terrotiry     Territories          @relation(fields: [territoryId], references: [id])
+  factionatk    Factions             @relation(name: "factionA", fields: [factionAtkId], references: [id])
+  factiondef    Factions             @relation(name: "factionD", fields: [factionDefId], references: [id])
+  status        EventStatus          @relation(fields: [statusId], references: [id])
+  eventplayers  eventPlayers[]
+}
+
+model EventType {
+  id            Int                  @default(autoincrement()) @id
+  name          String               @unique()
+  // References
+  gameEvent     GameEvents[]
+}
+
+model Factions {
+  id            Int                  @default(autoincrement()) @id
+  name          String               @unique()
+  // References
+  char          CharList[]
+  gameEventA    GameEvents[]         @relation("factionA")
+  gameEventD    GameEvents[]         @relation("factionD")
+  guild         GuildList[]
+}
+
+model Kingdons {
+  id            Int                  @default(autoincrement()) @id
+  name          String               @unique()
+  regionId      Int
+  // References
+  region        Regions              @relation(fields: [regionId], references: [id])
+  gameservers   GameServers[]
+}
+
+model Regions {
+  id            Int                  @default(autoincrement()) @id
+  name          String               @unique()
+  // References
+  gameservers   GameServers[]
+  kingdom       Kingdons[]
+}
+
+model Territories {
+  id            Int                  @default(autoincrement()) @id
+  name          String               @unique()
+  // References
+  gameEvent     GameEvents[]
+}
+
+model eventPlayers {
+  id            Int                   @default(autoincrement()) @id
+  eventId       Int
+  charId        Int
+  statusId      Int
+  // References
+  event         GameEvents            @relation(fields: [eventId], references: [id])
+  char          CharList              @relation(fields: [charId], references: [id])
+  status        EventPlayerStatus     @relation(fields: [statusId], references: [id])
+}
+
+model EventStatus {
+  id            Int                   @default(autoincrement()) @id
+  name          String
+  // References
+  gameEvent     GameEvents[]
+}
+
+model EventPlayerStatus {
+  id            Int                   @default(autoincrement()) @id
+  name          String
+  // Reference
+  eventplayers  eventPlayers[]
+}
